@@ -1,5 +1,6 @@
 import difflib
 import functools
+import math
 
 from . import abstract
 
@@ -12,10 +13,10 @@ def single(value, argument):
     """
     Return the best matcher ratio of the two values.
 
-    .. code-block::
+    .. code-block:: py
 
-        >>> score = single('alpha', 'theta')
-        >>> 0.4
+        >>> single('alpha', 'theta')
+        0.4
     """
 
     matcher = difflib.SequenceMatcher(a = argument, b = value)
@@ -33,12 +34,12 @@ def specific(values, argument, key = key):
     """
     Return (value, score) pairs for values against the argument.
 
-    .. code-block::
+    .. code-block:: py
 
         >>> values = ('aplha', 'beta', 'gamma')
         >>> pairs = specific(values, 'theta')
-        >>> pairs = tuple(pairs) # generator
-        >>> (('aplha', 0.4), ('beta', 0.6), ('gamma', 0.2))
+        >>> tuple(pairs) # generator
+        (('aplha', 0.4), ('beta', 0.6), ('gamma', 0.2))
     """
 
     return abstract.specific(single, values, argument, key = key)
@@ -49,11 +50,11 @@ def multiple(values, argument, key = key):
     """
     Return the highest best score against the argument.
 
-    .. code-block::
+    .. code-block:: py
 
         >>> values = ('aplha', 'beta', 'gamma')
-        >>> score = multiple(values, 'theta')
-        >>> 0.6
+        >>> multiple(values, 'theta')
+        0.6
     """
 
     assets = specific(values, argument, key = key)
@@ -70,7 +71,7 @@ def generic(fetch, values, argument, key = key):
     """
     Return (value, score) pairs for value's attributes against argument.
 
-    .. code-block::
+    .. code-block:: py
 
         >>> animals = [
         >>>     {'name': 'husky', 'type': 'dog', 'colors': ['white', 'grey']},
@@ -80,12 +81,12 @@ def generic(fetch, values, argument, key = key):
         >>> ]
         >>> naty = lambda animal: (animal['name'], animal['type'])
         >>> pairs = generic(naty, animals, 'ligon')
-        >>> pairs = tuple(pairs) # generator
-        >>> (
-        >>>     ({'name': 'husky', ...}, 0.25),
-        >>>     ({'name': 'ocelot', ...}, 0.36),
-        >>>     ({'name': 'flamingo', ...}, 0.61)
-        >>> )
+        >>> tuple(pairs) # generator
+        (
+            ({'name': 'husky', ...}, 0.25),
+            ({'name': 'ocelot', ...}, 0.36),
+            ({'name': 'flamingo', ...}, 0.61)
+        )
     """
 
     rank = functools.partial(multiple, key = key)
@@ -93,7 +94,7 @@ def generic(fetch, values, argument, key = key):
     return abstract.generic(rank, fetch, values, argument)
 
 
-def differentiate(pair):
+def differentiate(pair, stop = math.inf):
 
     """
     Overglorified sorting key.
@@ -101,31 +102,45 @@ def differentiate(pair):
 
     (value, score) = pair
 
+    if not score < stop:
+
+        raise ValueError(pair)
+
     return score
 
 
-def rank(pairs, reverse = False):
+def rank(pairs, reverse = False, safe = False):
 
     """
     Use on results similar from the exposed functions.
     """
 
-    return sorted(pairs, key = differentiate, reverse = not reverse)
+    stop = 1 if safe else math.inf
+
+    key = functools.partial(differentiate, stop = stop)
+
+    return sorted(pairs, key = key, reverse = not reverse)
 
 
-def lead(pairs):
+def lead(pairs, quick = True):
 
     """
     Return the highest scored pair.
 
-    .. code-block::
+    .. code-block:: py
 
         >>> # ...
-        >>> best = lead(pairs)
-        >>> ({'name': 'flamingo', ...}, 0.61)
+        >>> lead(pairs)
+        ({'name': 'flamingo', ...}, 0.61)
     """
 
-    (leader, *lowers) = rank(pairs)
+    try:
+
+        (leader, *lowers) = rank(pairs, safe = quick)
+
+    except ValueError as error:
+
+        (leader,) = error.args
 
     return leader
 
@@ -134,13 +149,13 @@ def pick(values, argument, fetch = None, key = key):
 
     """
     Return the best value matching the argument.
-    If fetch is used, attribute-based search is commences.
+    If fetch is used, attribute-based search commences.
 
-    .. code-block::
+    .. code-block:: py
 
         >>> # ...
-        >>> best = pick(animals, 'ligon', fetch = naty)
-        >>> {'name': 'flamingo', ...}
+        >>> pick(animals, 'ligon', fetch = naty)
+        {'name': 'flamingo', ...}
     """
 
     if key:
@@ -151,6 +166,6 @@ def pick(values, argument, fetch = None, key = key):
 
     pairs = functools.partial(*args)(values, argument, key = key)
 
-    (score, value) = lead(pairs)
+    (value, score) = lead(pairs, quick = True)
 
     return value
