@@ -1,5 +1,5 @@
 Installing
-==========
+----------
 
 .. code-block:: bash
 
@@ -36,3 +36,9 @@ More Complex
 
   # best matching one
   food = explore.lead(pairs)
+
+
+Links
+-----
+
+- `Documentation <https://explore.readthedocs.io>`_

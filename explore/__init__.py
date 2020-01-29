@@ -11,7 +11,7 @@ __all__ = ('single', 'specific', 'multiple', 'generic', 'lead', 'pick')
 def single(value, argument):
 
     """
-    Return the best matcher ratio of the two values.
+    Get the best matcher ratio of the two values.
 
     .. code-block:: py
 
@@ -32,7 +32,7 @@ key = type('', (), {'__call__': str.lower, '__repr__': lambda s: 'str.lower'})()
 def specific(values, argument, key = key):
 
     """
-    Return (value, score) pairs for values against the argument.
+    Get (value, score) pairs for values against the argument.
 
     .. code-block:: py
 
@@ -48,7 +48,7 @@ def specific(values, argument, key = key):
 def multiple(values, argument, key = key):
 
     """
-    Return the highest best score against the argument.
+    Get the highest best score against the argument.
 
     .. code-block:: py
 
@@ -69,7 +69,7 @@ def multiple(values, argument, key = key):
 def generic(fetch, values, argument, key = key):
 
     """
-    Return (value, score) pairs for value's attributes against argument.
+    Get (value, score) pairs for value's attributes against argument.
 
     .. code-block:: py
 
@@ -125,7 +125,7 @@ def rank(pairs, reverse = False, safe = False):
 def lead(pairs, quick = True):
 
     """
-    Return the highest scored pair.
+    Get the highest scored pair.
 
     .. code-block:: py
 
@@ -148,8 +148,8 @@ def lead(pairs, quick = True):
 def pick(values, argument, fetch = None, key = key):
 
     """
-    Return the best value matching the argument.
-    If fetch is used, attribute-based search commences.
+    Get the best value matching the argument. If ``fetch`` is used, attribute
+    search commences.
 
     .. code-block:: py
 
