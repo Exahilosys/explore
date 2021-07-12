@@ -26,7 +26,14 @@ def single(value, argument):
     return ratio
 
 
-key = type('', (), {'__call__': str.lower, '__repr__': lambda s: 'str.lower'})()
+key = type(
+    '',
+    (),
+    {
+        '__call__': lambda s, v: v.lower(),
+        '__repr__': lambda s: 'str.lower'
+    }
+)()
 
 
 def specific(values, argument, key = key):
@@ -103,7 +110,6 @@ def differentiate(pair, stop = math.inf):
     (value, score) = pair
 
     if not score < stop:
-
         raise ValueError(pair)
 
     return score
@@ -135,17 +141,14 @@ def lead(pairs, quick = True):
     """
 
     try:
-
         (leader, *lowers) = rank(pairs, safe = quick)
-
     except ValueError as error:
-
         (leader,) = error.args
 
     return leader
 
 
-def pick(values, argument, fetch = None, key = key):
+def pick(values, argument, fetch = None, key = key, score = False):
 
     """
     Get the best value matching the argument. If ``fetch`` is used, attribute
@@ -156,16 +159,20 @@ def pick(values, argument, fetch = None, key = key):
         >>> # ...
         >>> pick(animals, 'ligon', fetch = naty)
         {'name': 'flamingo', ...}
+        >>> pick(animals, 'letc', fetch = naty, score = True)
+        ({'name', 'ocelot', ...}, 0.4)# include score
     """
 
     if key:
-
         argument = key(argument)
 
     args = (generic, fetch) if fetch else (specific,)
 
     pairs = functools.partial(*args)(values, argument, key = key)
 
-    (value, score) = lead(pairs, quick = True)
+    result = lead(pairs, quick = True)
 
-    return value
+    if not score:
+        result = result[0]
+
+    return result

@@ -3,6 +3,15 @@
 __all__ = ()
 
 
+def _specific(key, rank, argument, value):
+
+    check = key(value) if key else value
+
+    score = rank(check, argument)
+
+    return score
+
+
 def specific(rank, values, argument, key = None):
 
     """
@@ -11,12 +20,19 @@ def specific(rank, values, argument, key = None):
     """
 
     for value in values:
-
-        check = key(value) if key else value
-
-        score = rank(check, argument)
-
+        score = _specific(key, rank, argument, value)
         yield (value, score)
+
+
+def _generic(rank, fetch, argument, value):
+
+    generate = fetch(value)
+
+    attributes = tuple(generate)
+
+    score = rank(attributes, argument) if attributes else 0
+
+    return score
 
 
 def generic(rank, fetch, values, argument):
@@ -27,15 +43,5 @@ def generic(rank, fetch, values, argument):
     """
 
     for value in values:
-
-        generate = fetch(value)
-
-        attributes = tuple(generate)
-
-        if not attributes:
-
-            continue
-
-        score = rank(attributes, argument)
-
+        score = _generic(rank, fetch, argument, value)
         yield (value, score)
